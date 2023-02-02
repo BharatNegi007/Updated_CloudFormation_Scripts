@@ -1,0 +1,129 @@
+Description: AWS EC2 server creation through aws cloudformation
+Parameters:
+  InstanceCount:
+    Description: Basic EC2 instance count
+    Type: String
+    Default: 1
+    ConstraintDescription: must be a valid EC2 instance count.
+  Owner:
+    Description: Enter Team or Individual Name Responsible for the Instance.
+    Type: String
+    Default: FirstName LastName
+  Project:
+    Description: Enter Project Name.
+    Type: String
+    Default: SingLife
+  PatchGroup:
+    Description: Enter Patch group name
+    Type: String
+    Default: Singlife
+  ApplicationName:
+    Description: Define Application
+    Type: String
+    Default: Singlife
+  InstanceType:
+    Type: String
+    Description: WebServer EC2 instance type
+    Default: t2.micro
+    AllowedValues:
+      - t2.nano
+      - t2.micro
+      - t2.small
+      - t2.medium
+      - t2.large
+      - t2.xlarge
+      - t2.2xlarge
+      - t3.nano
+      - t3.micro
+      - t3.small
+      - t3.medium
+      - t3.large
+      - t3.xlarge
+      - t3.2xlarge
+      - m4.large
+      - m4.xlarge
+      - m4.2xlarge
+      - m4.4xlarge
+      - m4.10xlarge
+      - m5.large
+      - m5.xlarge
+      - m5.2xlarge
+      - m5.4xlarge
+      - c5.large
+      - c5.xlarge
+      - c5.2xlarge
+      - c5.4xlarge
+      - c5.9xlarge
+      - g3.8xlarge
+      - r5.large
+      - r5.xlarge
+      - r5.2xlarge
+      - r5.4xlarge
+      - r3.12xlarge
+      - i3.xlarge
+      - i3.2xlarge
+      - i3.4xlarge
+      - i3.8xlarge
+      - d2.xlarge
+      - d2.2xlarge
+      - d2.4xlarge
+      - d2.8xlarge
+    ConstraintDescription: must be a valid EC2 instance type.
+  KeyName:
+    Description: Specify key pair for the instance
+    Type: 'AWS::EC2::KeyPair::KeyName'
+    Default: DirectAccess
+  ImageID:
+    Description: Select Image ID
+    Type: 'List<AWS::EC2::Image::Id>'
+    Default: ami-0ecba82c99deb9328
+  SecurityGroups:
+    Description: List of security group IDs for the instances
+    Type: 'List<AWS::EC2::SecurityGroup::Id>'
+  Vpcid:
+    Description: Define VPC this instance needs to be associated with
+    Type: 'List<AWS::EC2::VPC::Id>'
+    Default: vpc-62dca006
+  AvailabilityZone:
+    Description: Select AZs
+    Type: 'List<AWS::EC2::AvailabilityZone::Name>'
+    Default: 'ap-southeast-1a,ap-southeast-1b'
+  Subnets:
+    Description: Define Subnet this instance needs to be associated with
+    Type: 'List<AWS::EC2::Subnet::Id>'
+    Default: 'subnet-cad7d2ae,subnet-d03b7799'
+  InstanceProfile:
+    Description: EC2 attached IAM role
+    Type: String
+    Default: iam-role-ec2-ssm-esb-only
+    ConstraintDescription: must be an existing IAM role which will be attached to EC2 instance.
+Resources:
+  myEC2Instance:
+    Type: 'AWS::EC2::Instance'
+    Properties:
+      AvailabilityZone: !Select 
+        - 0
+        - !Ref AvailabilityZone
+      KeyName: !Ref KeyName
+      DisableApiTermination: false
+      ImageId: !Select 
+        - 0
+        - !Ref ImageID
+      InstanceType: !Ref InstanceType
+      SecurityGroupIds: !Ref SecurityGroups
+      IamInstanceProfile: !Ref InstanceProfile
+      SubnetId: !Select
+        - 0
+        - !Ref Subnets       
+      UserData:
+        'Fn::Base64': !Sub |
+          #!/bin/bash
+      Tags:
+        - Key: Application Name
+          Value: !Ref ApplicationName
+        - Key: Owner
+          Value: !Ref Owner
+        - Key: Project
+          Value: !Ref Project
+        - Key: Patch Group
+          Value: !Ref PatchGroup
